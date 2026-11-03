@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f5f5">
+    <title>Little by Little — Learn to code</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #202020;
+        background: #f5f5f5;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        --line: #bdbdbd;
+        --muted: #656565;
+        --surface: #fff;
+        --soft: #ededed;
+      }
+
+      * { box-sizing: border-box; }
+
+      body { margin: 0; min-width: 320px; }
+      button { font: inherit; }
+      button:focus-visible, a:focus-visible {
+        outline: 3px solid #222;
+        outline-offset: 3px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 64px;
+        padding: 12px 24px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .brand { font-weight: 700; }
+      .top-meta { display: flex; align-items: center; gap: 20px; color: var(--muted); }
+      .page { display: grid; grid-template-columns: 220px minmax(0, 1fr) 240px; gap: 20px; max-width: 1280px; margin: 0 auto; padding: 24px; }
+      .panel { border: 1px solid var(--line); background: var(--surface); }
+      .sidebar, .pet-panel { align-self: start; padding: 16px; }
+      .section-label { margin: 0 0 12px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .course-title { margin: 0 0 18px; font-size: 18px; }
+      .lesson-list { display: grid; gap: 8px; }
+      .lesson-link { padding: 10px; border: 1px solid transparent; color: inherit; text-decoration: none; }
+      .lesson-link[aria-current="step"] { border-color: var(--line); background: var(--soft); font-weight: 700; }
+      .lesson-link span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; font-weight: 400; }
+
+      main { min-width: 0; }
+      .lesson-heading { margin: 0 0 6px; font-size: 28px; }
+      .lesson-subtitle { margin: 0 0 20px; color: var(--muted); line-height: 1.5; }
+      .progress-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; color: var(--muted); font-size: 13px; }
+      progress { width: 100%; height: 12px; accent-color: #444; }
+      .exercise { padding: 20px; }
+      .exercise-top { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 13px; }
+      .exercise h2 { margin: 14px 0 8px; font-size: 20px; }
+      .exercise p { line-height: 1.5; }
+      .code-sample { overflow-x: auto; margin: 16px 0; padding: 16px; border: 1px solid var(--line); background: #f8f8f8; font: 14px/1.6 Consolas, "Courier New", monospace; }
+      .options { display: grid; gap: 10px; padding: 0; border: 0; margin: 18px 0; }
+      .options legend { margin-bottom: 10px; font-weight: 700; }
+      .answer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        text-align: left;
+        cursor: pointer;
+      }
+      .answer:hover:not(:disabled) { background: var(--soft); }
+      .answer:disabled { color: inherit; cursor: default; }
+      .answer[aria-pressed="true"] { border-color: #222; }
+      .answer.correct { border-color: #333; background: #ededed; }
+      .answer.incorrect { border-style: dashed; }
+      .answer-key { display: inline-grid; width: 24px; height: 24px; place-items: center; border: 1px solid var(--line); font-size: 12px; }
+      .feedback { min-height: 24px; margin: 10px 0; font-weight: 700; }
+      .feedback[data-state="incorrect"] { font-weight: 400; }
+      .hint-box { margin: 14px 0; padding: 12px; border: 1px dashed var(--line); background: #fafafa; }
+      .hint-box[hidden] { display: none; }
+      .hint-box p { margin: 0; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+      .button { min-height: 40px; padding: 9px 14px; border: 1px solid #333; background: var(--surface); color: inherit; cursor: pointer; }
+      .button.primary { background: #333; color: white; }
+      .button:disabled { border-color: var(--line); background: var(--soft); color: var(--muted); cursor: not-allowed; }
+
+      .pet-avatar { display: grid; width: 80px; height: 80px; place-items: center; margin: 8px auto 14px; border: 1px solid var(--line); border-radius: 50%; background: var(--soft); font-size: 38px; }
+      .pet-name { margin: 0 0 8px; text-align: center; font-size: 18px; }
+      .pet-message { min-height: 48px; color: var(--muted); line-height: 1.5; text-align: center; }
+      .pet-stats { display: flex; justify-content: space-between; gap: 8px; margin: 16px 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; }
+      .pet-panel .button { width: 100%; }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+      @media (max-width: 900px) {
+        .page { grid-template-columns: 190px minmax(0, 1fr); }
+        .pet-panel { grid-column: 2; display: grid; grid-template-columns: 80px minmax(0, 1fr); align-items: center; gap: 0 16px; }
+        .pet-avatar { grid-row: span 3; margin: 0; }
+        .pet-name, .pet-message { text-align: left; }
+        .pet-stats, .pet-panel .button { grid-column: 1 / -1; }
+      }
+      @media (max-width: 620px) {
+        .topbar { align-items: flex-start; padding: 12px 16px; }
+        .top-meta { gap: 10px; font-size: 13px; }
+        .page { grid-template-columns: 1fr; gap: 14px; padding: 16px; }
+        .sidebar { padding: 12px; }
+        .course-title { margin-bottom: 10px; }
+        .lesson-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .lesson-link { padding: 8px; font-size: 13px; }
+        .lesson-link span { font-size: 11px; }
+        .pet-panel { grid-column: auto; }
+        .lesson-heading { font-size: 24px; }
+        .exercise { padding: 16px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Little by Little home">Little by Little</a>
+      <div class="top-meta">
+        <span>Intro to programming</span>
+        <span aria-label="3 day learning streak">Streak: <strong id="streak">3 days</strong></span>
+      </div>
+    </header>
+
+    <div class="page">
+      <nav class="panel sidebar" aria-label="Course lessons">
+        <p class="section-label">Your path</p>
+        <h2 class="course-title">Programming basics</h2>
+        <div class="lesson-list">
+          <a class="lesson-link" href="#lesson" aria-current="step">1. Variables<span>In progress</span></a>
+          <a class="lesson-link" href="#lesson">2. Decisions<span>Up next</span></a>
+          <a class="lesson-link" href="#lesson">3. Loops<span>Locked</span></a>
+        </div>
+      </nav>
+
+      <main id="lesson">
+        <p class="section-label">Unit 1 · Lesson <span id="lesson-number">1</span> of 3</p>
+        <h1 class="lesson-heading">Give your code a name</h1>
+        <p class="lesson-subtitle">Learn how variables store information, one small step at a time.</p>
+        <div class="progress-wrap">
+          <span>Lesson progress</span>
+          <progress id="progress" value="0" max="2" aria-label="Lesson progress"></progress>
+          <span id="progress-label">0 / 2</span>
+        </div>
+
+        <section class="panel exercise" aria-labelledby="question-title">
+          <div class="exercise-top">
+            <span id="exercise-label">Quick check · 1 of 2</span>
+            <span>About 2 min</span>
+          </div>
+          <h2 id="question-title">Which line creates a variable named <code>score</code> with the value <code>10</code>?</h2>
+          <p id="question-prompt">Pick an answer. If you get stuck, ask for a hint — they’ll get a little more specific each time.</p>
+          <pre class="code-sample" aria-label="Code example"><code>score = 10
+print(score)</code></pre>
+
+          <fieldset class="options" id="answers">
+            <legend>Choose one:</legend>
+          </fieldset>
+          <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+          <div class="hint-box" id="hint-box" hidden>
+            <p><strong id="hint-title">Hint</strong> <span id="hint-text"></span></p>
+          </div>
+          <div class="actions">
+            <button class="button" id="hint-button" type="button">Show me a hint</button>
+            <button class="button primary" id="next-button" type="button" disabled>Next question</button>
+          </div>
+        </section>
+      </main>
+
+      <aside class="panel pet-panel" aria-label="Your learning buddy">
+        <p class="section-label">Your learning buddy</p>
+        <div class="pet-avatar" id="pet-avatar" aria-hidden="true">🐣</div>
+        <h2 class="pet-name">Miso</h2>
+        <p class="pet-message" id="pet-message" aria-live="polite">I'm here if you need a hint. Let's learn together!</p>
+        <div class="pet-stats">
+          <span>Knowledge snacks</span>
+          <strong id="snacks">0</strong>
+        </div>
+        <button class="button" id="pet-button" type="button">Check in with Miso</button>
+      </aside>
+    </div>
+
+    <script>
+      const questions = [
+        {
+          title: "Which line creates a variable named score with the value 10?",
+          prompt: "Pick an answer. If you get stuck, ask for a hint — they’ll get a little more specific each time.",
+          code: "score = 10\nprint(score)",
+          answers: [
+            "score = 10",
+            "10 = score",
+            "variable score is 10"
+          ],
+          correct: 0,
+          hints: [
+            "A variable is a name we attach to a value.",
+            "In Python, the name goes on the left side of the equals sign."
+          ],
+          explanation: "That's it! The equals sign stores the value 10 under the name score."
+        },
+        {
+          title: "What will this code print?",
+          prompt: "Use the variable's value to figure out what appears on the screen.",
+          code: "points = 4\npoints = points + 1\nprint(points)",
+          answers: [
+            "4",
+            "5",
+            "points + 1"
+          ],
+          correct: 1,
+          hints: [
+            "Read the lines from top to bottom. The second line changes points.",
+            "Start with 4, then add 1 before printing."
+          ],
+          explanation: "Correct! points starts at 4, then becomes 5."
+        }
+      ];
+
+      let questionIndex = 0;
+      let hintIndex = 0;
+      let completed = 0;
+      let snacks = 0;
+      let answered = false;
+
+      const answersElement = document.querySelector("#answers");
+      const feedbackElement = document.querySelector("#feedback");
+      const hintBox = document.querySelector("#hint-box");
+      const hintButton = document.querySelector("#hint-button");
+      const nextButton = document.querySelector("#next-button");
+      const progress = document.querySelector("#progress");
+      const petMessage = document.querySelector("#pet-message");
+      const petAvatar = document.querySelector("#pet-avatar");
+
+      function renderQuestion() {
+        const question = questions[questionIndex];
+        document.querySelector("#question-title").textContent = question.title;
+        document.querySelector("#question-prompt").textContent = question.prompt;
+        document.querySelector("#exercise-label").textContent = `Quick check · ${questionIndex + 1} of ${questions.length}`;
+        document.querySelector(".code-sample code").textContent = question.code;
+        answersElement.querySelectorAll(".answer").forEach((answer) => answer.remove());
+
+        question.answers.forEach((text, index) => {
+          const button = document.createElement("button");
+          button.className = "answer";
+          button.type = "button";
+          button.dataset.index = index;
+          button.setAttribute("aria-pressed", "false");
+          const key = document.createElement("span");
+          key.className = "answer-key";
+          key.textContent = String.fromCharCode(65 + index);
+          const label = document.createElement("span");
+          label.textContent = text;
+          button.append(key, label);
+          button.addEventListener("click", () => selectAnswer(index));
+          answersElement.append(button);
+        });
+
+        hintIndex = 0;
+        answered = false;
+        feedbackElement.textContent = "";
+        feedbackElement.dataset.state = "";
+        hintBox.hidden = true;
+        hintButton.disabled = false;
+        hintButton.textContent = "Show me a hint";
+        nextButton.disabled = true;
+        nextButton.textContent = questionIndex === questions.length - 1 ? "Finish lesson" : "Next question";
+      }
+
+      function selectAnswer(selectedIndex) {
+        if (answered) return;
+        const question = questions[questionIndex];
+        const buttons = answersElement.querySelectorAll(".answer");
+        const isCorrect = selectedIndex === question.correct;
+
+        buttons.forEach((button, index) => {
+          button.disabled = true;
+          button.setAttribute("aria-pressed", String(index === selectedIndex));
+          if (index === question.correct) button.classList.add("correct");
+          if (index === selectedIndex && !isCorrect) button.classList.add("incorrect");
+        });
+
+        if (isCorrect) {
+          answered = true;
+          completed += 1;
+          snacks += 1;
+          document.querySelector("#snacks").textContent = snacks;
+          progress.value = completed;
+          document.querySelector("#progress-label").textContent = `${completed} / ${questions.length}`;
+          feedbackElement.textContent = question.explanation;
+          feedbackElement.dataset.state = "correct";
+          petMessage.textContent = "You got it! I found a knowledge snack!";
+          petAvatar.textContent = "🐥";
+          nextButton.disabled = false;
+          hintButton.disabled = true;
+        } else {
+          feedbackElement.textContent = "Not quite. Take another look, or try a hint — you can do it.";
+          feedbackElement.dataset.state = "incorrect";
+          petMessage.textContent = "That's okay! Mistakes help us learn. Want a hint?";
+          petAvatar.textContent = "🐣";
+          buttons.forEach((button) => {
+            if (Number(button.dataset.index) !== selectedIndex) button.disabled = false;
+          });
+        }
+      }
+
+      hintButton.addEventListener("click", () => {
+        const hints = questions[questionIndex].hints;
+        if (hintIndex >= hints.length) return;
+        hintBox.hidden = false;
+        document.querySelector("#hint-title").textContent = `Hint ${hintIndex + 1}:`;
+        document.querySelector("#hint-text").textContent = hints[hintIndex];
+        hintIndex += 1;
+        if (hintIndex === hints.length) hintButton.textContent = "No more hints";
+        petMessage.textContent = "A little clue to help you keep going!";
+      });
+
+      nextButton.addEventListener("click", () => {
+        if (nextButton.disabled) return;
+        if (questionIndex < questions.length - 1) {
+          questionIndex += 1;
+          renderQuestion();
+          return;
+        }
+
+        document.querySelector("#question-title").textContent = "Lesson complete!";
+        document.querySelector(".lesson-subtitle").textContent = "You practiced creating variables and tracing how their values change.";
+        document.querySelector("#exercise-label").textContent = "Nice work · lesson complete";
+        document.querySelector("#question-prompt").textContent = "Both quick checks are complete.";
+        document.querySelector(".code-sample").hidden = true;
+        answersElement.hidden = true;
+        feedbackElement.textContent = "You and Miso earned 2 knowledge snacks. Come back soon for the next lesson!";
+        hintBox.hidden = true;
+        hintButton.hidden = true;
+        nextButton.hidden = true;
+        petAvatar.textContent = "🐤";
+        petMessage.textContent = "We did it! I'm proud of your progress.";
+      });
+
+      document.querySelector("#pet-button").addEventListener("click", () => {
+        petMessage.textContent = answered
+          ? "You're doing great. Ready for the next little challenge?"
+          : "Take your time. You can try an answer or ask me for a hint.";
+      });
+
+      renderQuestion();
+    </script>
+  </body>
+</html>
